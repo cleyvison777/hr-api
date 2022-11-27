@@ -1,0 +1,666 @@
+openapi: 3.0.1
+info:
+  title: Sistema de Recusos Humanos(hr-api)
+  version: 0.0.1
+  description: Sistemas que organiza e gerencia dados dos funcionarios.
+  termsOfService: https://app-sfa.pa.gov.br
+  contact:
+    name: CGPS - Sustentação
+    email: cgps-sustentacao@gmail.com
+    url: https://app-sfa.pa.gov
+externalDocs:
+  description: Gde documentação
+  url: https//:app-sepa.com
+ 
+servers:
+  - url: http://localhost:8080
+    description: hr-service
+    
+    
+paths:
+  /funcionario/{id}:
+    put:
+      tags:
+        - funcionario-controller
+      summary: Atualiza funcioanrio, localizando por ID
+      operationId: atualizar
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizaFuncionarioDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+    delete:
+      tags:
+        - funcionario-controller
+      summary: Deleta o funcionario.
+      operationId: remover
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /departamento/{idDepartamento}:
+    put:
+      tags:
+        - departamento-controller
+      operationId: atualizar_1
+      parameters:
+        - name: idDepartamento
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarDepartamentoForm'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DepartamentoDTO'
+    delete:
+      tags:
+        - departamento-controller
+      operationId: remover_1
+      parameters:
+        - name: idDepartamento
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+  /categoria/{id}:
+    put:
+      tags:
+        - categoria-controller
+      operationId: atualizar_2
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoriaAtualizaForm'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriaDto'
+    delete:
+      tags:
+        - categoria-controller
+      operationId: deletar
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+  /cargo/{id}:
+    put:
+      tags:
+        - cargo-controller
+      operationId: atualizar_3
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarCargoForm'
+        required: true
+      responses:
+          '200':
+           description: OK
+           content:
+             application/json:
+              schema:
+                $ref: '#/components/schemas/CargoDto'
+    delete:
+      tags:
+        - cargo-controller
+      summary: Deleta funcionario por ID
+      operationId: remover_2
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+  /funcionario:
+    get:
+      tags:
+        - funcionario-controller
+      summary: Lista todos os funcionarios e pesquisa por nome.
+      operationId: listar
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: size
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: nome
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageFuncionarioDTO'
+    post:
+      tags:
+        - funcionario-controller
+      operationId: cadastrar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FuncionarioForm'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuncionarioDTO'
+  /departamento:
+    get:
+      tags:
+        - departamento-controller
+      operationId: listar_1
+      parameters:
+        - name: nome
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: size
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+           application/json:
+              schema:
+                $ref: '#/components/schemas/PageDepartamentoDTO'
+    post:
+      tags:
+        - departamento-controller
+      operationId: cadastrar_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartamentoForm'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartamentoDTO'
+  /categoria:
+    get:
+      tags:
+        - categoria-controller
+      operationId: listar_2
+      parameters:
+        - name: nome
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: size
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageCategoriaDto'
+    post:
+      tags:
+        - categoria-controller
+      operationId: cadastrar_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoriaForm'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CategoriaDto'
+  /cargo:
+    get:
+      tags:
+        - cargo-controller
+      operationId: listar_3
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: size
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: nome
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageCargoDto'
+    post:
+      tags:
+        - cargo-controller
+      operationId: cadastrar_3
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CargoForm'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CargoDto'
+components:
+  schemas:
+    AtualizaFuncionarioDto:
+      type: object
+      properties:
+        nome:
+          type: string
+          writeOnly: true
+        cpf:
+          type: string
+          writeOnly: true
+        rg:
+          type: string
+          writeOnly: true
+        departamento:
+          type: integer
+          format: int64
+          writeOnly: true
+        salario:
+          type: number
+          format: double
+          writeOnly: true
+        cargo:
+          type: integer
+          format: int64
+          writeOnly: true
+        categoria:
+          type: integer
+          format: int64
+          writeOnly: true
+    AtualizarDepartamentoForm:
+      type: object
+      properties:
+        nome:
+          type: string
+          writeOnly: true
+    DepartamentoDTO:
+      type: object
+      properties:
+        nome:
+          type: string
+    CategoriaAtualizaForm:
+      type: object
+      properties:
+        nome:
+          type: string
+          writeOnly: true
+    CategoriaDto:
+      type: object
+      properties:
+        nome:
+          type: string
+    AtualizarCargoForm:
+      type: object
+      properties:
+        nome:
+          type: string
+          writeOnly: true
+    CargoDto:
+      type: object
+      properties:
+        nome:
+          type: string
+    FuncionarioForm:
+      type: object
+      properties:
+        nome:
+          type: string
+          writeOnly: true
+        cpf:
+          type: string
+          writeOnly: true
+        departamento:
+          type: integer
+          format: int64
+          writeOnly: true
+        rg:
+          type: string
+          writeOnly: true
+        salario:
+          type: number
+          format: double
+          writeOnly: true
+        cargo:
+          type: integer
+          format: int64
+          writeOnly: true
+        categoria:
+          type: integer
+          format: int64
+          writeOnly: true
+    FuncionarioDTO:
+      type: object
+      properties:
+        nome:
+          type: string
+        cpf:
+          type: string
+        rg:
+          type: string
+        departamento:
+          type: string
+        cargo:
+          type: string
+        categoria:
+          type: string
+        salario:
+          type: number
+          format: double
+    DepartamentoForm:
+      type: object
+      properties:
+        nome:
+          type: string
+          writeOnly: true
+    CategoriaForm:
+      type: object
+      properties:
+        nome:
+          type: string
+          writeOnly: true
+    CargoForm:
+      type: object
+      properties:
+        nome:
+          type: string
+          writeOnly: true
+    PageFuncionarioDTO:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/FuncionarioDTO'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/Sort'
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        empty:
+          type: boolean
+    PageableObject:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: '#/components/schemas/Sort'
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        paged:
+          type: boolean
+        unpaged:
+          type: boolean
+    Sort:
+      type: object
+      properties:
+        empty:
+          type: boolean
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
+    PageDepartamentoDTO:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/DepartamentoDTO'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/Sort'
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        empty:
+          type: boolean
+    PageCategoriaDto:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoriaDto'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/Sort'
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        empty:
+          type: boolean
+    PageCargoDto:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/CargoDto'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/Sort'
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        empty:
+          type: boolean
