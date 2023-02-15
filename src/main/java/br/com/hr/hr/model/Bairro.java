@@ -19,9 +19,17 @@ public class Bairro {
 	@ManyToOne
 	private Cidade cidade;
 
-	public Bairro(String nome, Cidade cidade) {
+	public Bairro() {
+
+	}
+
+	public Bairro(Long id) {
+		this.id = id;
+	}
+
+	public Bairro(String nome, Long cidade) {
 		this.nome = nome;
-		this.cidade = new Cidade(id);
+		this.cidade = new Cidade(cidade);
 
 	}
 
