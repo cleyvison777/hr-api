@@ -40,7 +40,7 @@ public class Pessoa {
 
 	public Pessoa(String nome, String cpf, double salario, String rg, Long departamento, Long cargo, Long categoria) {
 		this.nome = nome;
-		this.salario = salario;
+		this.salario = getBonificacao(salario, categoria);
 		this.documentacaoPessoal = new DocumentacaoPessoal(cpf, rg);
 		this.departamento = new Departamento(departamento);
 		this.cargo = new Cargo(cargo);
@@ -49,6 +49,20 @@ public class Pessoa {
 
 	public Cargo getCargo() {
 		return cargo;
+	}
+
+	// projeto futuro de aumentar o salario do funcionario por categoria
+	public double getBonificacao(double salario, Long categoria) {
+		switch (categoria.toString()) {
+		case "2":
+			return this.salario = salario + (salario * 0.1);
+		case "3":
+			return this.salario = salario + (salario * 0.2);
+		default:
+			System.out.println("Funcionario sem categoria para Bonus salarial");
+		}
+		return this.salario;
+
 	}
 
 	public void setCargo(Long cargo) {
@@ -102,7 +116,5 @@ public class Pessoa {
 	public void setCategoria(Long categoria) {
 		this.categoria = new Categoria(categoria);
 	}
-	
-	
 
 }
