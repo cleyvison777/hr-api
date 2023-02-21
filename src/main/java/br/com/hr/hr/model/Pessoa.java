@@ -7,7 +7,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -51,7 +50,7 @@ public class Pessoa {
 		return cargo;
 	}
 
-	// projeto futuro de aumentar o salario do funcionario por categoria
+	// Aumento de o salario do funcionario por categoria
 	public double getBonificacao(double salario, Long categoria) {
 		switch (categoria.toString()) {
 		case "2":
@@ -69,7 +68,7 @@ public class Pessoa {
 		this.cargo = new Cargo(cargo);
 	}
 
-	public Long getId() {
+	public java.lang.Object getId() {
 		return id;
 	}
 

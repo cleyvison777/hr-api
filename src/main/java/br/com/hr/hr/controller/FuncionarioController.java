@@ -36,16 +36,23 @@ public class FuncionarioController {
 
 	@GetMapping
 	public Page<FuncionarioDTO> listar(@RequestParam int page, @RequestParam int size,
-			@RequestParam(required = false) String nome) {
+			@RequestParam(required = false) String nome, @RequestParam(required = false) String nomeCategoria) {
 		Pageable pageable = PageRequest.of(page, size);
-		if (nome == null) {
-			Page<Pessoa> funcionario = funcionarioRepository.findAll(pageable);
+		
+
+		if (nomeCategoria != null) {
+			Page<Pessoa> funcionario = funcionarioRepository.findByCategoriaNome(nomeCategoria, pageable);
 			return FuncionarioDTO.converter(funcionario);
-		} else {
+
+		}
+		if (nome != null) {
 			Page<Pessoa> funcionario = funcionarioRepository.findByNome(nome, pageable);
 			return FuncionarioDTO.converter(funcionario);
 		}
-
+		else  {
+			Page<Pessoa> funcionario = funcionarioRepository.findAll(pageable);
+			return FuncionarioDTO.converter(funcionario);
+		}
 	}
 
 	@PostMapping
@@ -69,7 +76,7 @@ public class FuncionarioController {
 
 		return ResponseEntity.notFound().build();
 
-	} 
+	}
 
 	@PutMapping("/{id}")
 	@Transactional
@@ -83,4 +90,3 @@ public class FuncionarioController {
 	}
 
 }
-
