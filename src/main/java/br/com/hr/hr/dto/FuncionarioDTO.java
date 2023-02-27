@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import br.com.hr.hr.model.Pessoa;
 
 public class FuncionarioDTO {
+	private Long id;
 	private String nome;
 	private String cpf;
 	private String rg;
@@ -14,6 +15,7 @@ public class FuncionarioDTO {
 	private double salario;
 
 	public FuncionarioDTO(Pessoa funcionario) {
+		this.id = (Long) funcionario.getId();
 		this.nome = funcionario.getNome();
 		this.cpf = funcionario.getDocumentacaoPessoal().getCpf();
 		this.rg = funcionario.getDocumentacaoPessoal().getRg();
