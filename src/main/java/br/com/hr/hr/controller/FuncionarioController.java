@@ -5,21 +5,18 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
+import br.com.hr.hr.dto.BuscaFuncionarioDTO;
+import br.com.hr.hr.service.FuncionarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import br.com.hr.hr.dto.FuncionarioDTO;
@@ -31,56 +28,54 @@ import br.com.hr.hr.repository.FuncionarioRepository;
 @RestController
 @RequestMapping("/funcionario")
 public class FuncionarioController {
-	@Autowired
-	private FuncionarioRepository funcionarioRepository;
 
-	@GetMapping
-	public Page<FuncionarioDTO> listar(@RequestParam int page, @RequestParam int size,
-			@RequestParam(required = false) String nome) {
-		Pageable pageable = PageRequest.of(page, size);
-		if (nome == null) {
-			Page<Pessoa> funcionario = funcionarioRepository.findAll(pageable);
-			return FuncionarioDTO.converter(funcionario);
-		} else {
-			Page<Pessoa> funcionario = funcionarioRepository.findByNome(nome, pageable);
-			return FuncionarioDTO.converter(funcionario);
-		}
+    @Autowired
+    private FuncionarioService funcionarioService;
 
-	}
+    @Autowired
+    private FuncionarioRepository funcionarioRepository;
 
-	@PostMapping
-	@Transactional
-	public ResponseEntity<FuncionarioDTO> cadastrar(@RequestBody @Valid FuncionarioForm form,
-			UriComponentsBuilder builder) {
-		Pessoa pessoa = form.converter();
-		funcionarioRepository.save(pessoa);
-		URI uri = builder.path("/funcionario/{id}").buildAndExpand(pessoa.getId()).toUri();
-		return ResponseEntity.created(uri).body(new FuncionarioDTO(pessoa));
-	}
+    @GetMapping
+    public Page<FuncionarioDTO> listar(@RequestParam(defaultValue = "0") @Min(0) int page, @RequestParam(defaultValue = "10") @Min(1) int size, @Valid @ModelAttribute BuscaFuncionarioDTO busca) {
+        Pageable pageable = PageRequest.of(page, size);
 
-	@DeleteMapping("/{id}")
-	@Transactional
-	public ResponseEntity<?> remover(@PathVariable Long id) {
-		Optional<Pessoa> optional = funcionarioRepository.findById(id);
-		if (optional.isPresent()) {
-			funcionarioRepository.deleteById(id);
-			return ResponseEntity.ok().build();
-		}
+        if (busca.getNomeCategoria() != null) {
+            return funcionarioService.buscarPorCategoria(busca.getNomeCategoria(), pageable);
+        }
+        if (busca.getNome() != null) {
+            return funcionarioService.buscarPorNome(busca.getNome(), pageable);
+        }
+        return funcionarioService.buscarTodos(pageable);
 
-		return ResponseEntity.notFound().build();
+    }
 
-	} 
+    @PostMapping
+    @Transactional
+    public ResponseEntity<FuncionarioDTO> cadastrar(@RequestBody @Valid FuncionarioForm form, UriComponentsBuilder builder) {
+        Pessoa pessoa = form.converter();
+        funcionarioService.cadastrar(pessoa);
+        URI uri = builder.path("/funcionario/{id}").buildAndExpand(pessoa.getId()).toUri();
+        return ResponseEntity.created(uri).body(new FuncionarioDTO(pessoa));
+    }
 
-	@PutMapping("/{id}")
-	@Transactional
-	public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody @Valid AtualizaFuncionarioDto form) {
-		Optional<Pessoa> optional = funcionarioRepository.findById(id);
-		if (optional.isPresent()) {
-			Pessoa pessoa = form.atualizar(id, funcionarioRepository);
-			return ResponseEntity.ok(new FuncionarioDTO(pessoa));
-		}
-		return ResponseEntity.notFound().build();
-	}
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseStatusException remover(@PathVariable Long id) {
+        Optional<Pessoa> optional = funcionarioRepository.findById(id);
+        if (optional.isPresent()) {
+            funcionarioRepository.deleteById(id);
+            return new ResponseStatusException(HttpStatus.OK, "Funcionario Removido com sucesso!");
+        }
+
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Entidade não encontrada");
+
+    }
+
+    @PutMapping("/{id}")
+    @Transactional
+    public ResponseEntity<FuncionarioDTO> atualizar(@PathVariable Long id, @RequestBody @Valid AtualizaFuncionarioDto form) {
+        Pessoa pessoa = funcionarioService.atualizarFuncionario(id, form);
+        return ResponseEntity.ok(new FuncionarioDTO(pessoa));
+    }
 
 }
-

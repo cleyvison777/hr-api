@@ -9,4 +9,6 @@ import br.com.hr.hr.model.Pessoa;
 public interface FuncionarioRepository extends JpaRepository<Pessoa, Long> {
 	Page<Pessoa> findByNome(String nome, Pageable pageable);
 
+	Page<Pessoa> findByCategoriaNome(String nomeCategoria, Pageable pageable);
+
 }
