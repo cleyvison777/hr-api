@@ -4,6 +4,8 @@ import br.com.hr.hr.dto.FuncionarioDTO;
 import br.com.hr.hr.form.AtualizaFuncionarioDto;
 import br.com.hr.hr.model.Pessoa;
 import br.com.hr.hr.repository.FuncionarioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +21,7 @@ public class FuncionarioService {
 
     @Autowired
     private FuncionarioRepository funcionarioRepository;
+    private static final Logger log = LoggerFactory.getLogger(FuncionarioService.class);
 
     public void cadastrar(Pessoa pessoa) {
         // validar os dados antes de salvar
@@ -53,7 +56,19 @@ public class FuncionarioService {
             return funcionarioRepository.save(pessoa);
 
         }
-        throw new EntityNotFoundException("Entidade não encontrada");
+        throw new EntityNotFoundException("Entidade não encontrada: " + id);
 
+    }
+
+    @Transactional
+    public boolean remover(Long id) {
+        Optional<Pessoa> optional = funcionarioRepository.findById(id);
+        if (optional.isPresent()) {
+            funcionarioRepository.deleteById(id);
+            log.info("Funcionário removido com sucesso. ID: {}", id);
+            return true;
+        }
+        log.warn("Não foi possível remover o funcionário. ID: {}", id);
+        return false;
     }
 }

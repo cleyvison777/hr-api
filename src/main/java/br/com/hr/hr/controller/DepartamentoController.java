@@ -5,11 +5,12 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
+import br.com.hr.hr.service.DepartamentoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,57 +33,42 @@ import br.com.hr.hr.repository.DepartamentoRepository;
 @RequestMapping("/departamento")
 public class DepartamentoController {
 
-	@Autowired
-	private DepartamentoRepository departamentoRepository;
 
-	@GetMapping
-	public Page<DepartamentoDTO> listar(@RequestParam(required = false) String nome, @RequestParam int page,
-			@RequestParam int size) {
-		Pageable pageable = PageRequest.of(page, size);
-		if (nome == null) {
-			Page<Departamento> departamento = departamentoRepository.findAll(pageable);
-			return DepartamentoDTO.converter(departamento);
-		} else {
-			Page<Departamento> departamento = departamentoRepository.findByNome(nome, pageable);
-			return DepartamentoDTO.converter(departamento);
-		}
+    @Autowired
+    private DepartamentoService departamentoService;
 
-	}
 
-	@PostMapping
-	@Transactional
-	public ResponseEntity<DepartamentoDTO> cadastrar(@RequestBody @Valid DepartamentoForm form,
-			UriComponentsBuilder builder) {
-		Departamento departamento = form.converter();
-		departamentoRepository.save(departamento);
-		URI uri = builder.path("/departamento/{idDepartamento}").buildAndExpand(departamento.getIdDepartamento())
-				.toUri();
-		return ResponseEntity.created(uri).body(new DepartamentoDTO(departamento));
+    @GetMapping
+    public Page<DepartamentoDTO> listar(@RequestParam(required = false) String nome, @RequestParam(defaultValue = "0") @Min(0) int page, @RequestParam(defaultValue = "10") @Min(1) int size) {
+        return departamentoService.buscarDepartamento(nome, page, size);
 
-	}
+    }
 
-	@PutMapping("/{idDepartamento}")
-	@Transactional
+    @PostMapping
+    @Transactional
+    public ResponseEntity<DepartamentoDTO> cadastrar(@RequestBody @Valid DepartamentoForm form, UriComponentsBuilder builder) {
+        Departamento departamento = form.converter();
+        departamentoService.cadastrar(departamento);
+        URI uri = builder.path("/departamento/{idDepartamento}").buildAndExpand(departamento.getIdDepartamento()).toUri();
+        return ResponseEntity.created(uri).body(new DepartamentoDTO(departamento));
 
-	public ResponseEntity<DepartamentoDTO> atualizar(@PathVariable Long idDepartamento,
-			@RequestBody @Valid AtualizarDepartamentoForm form) {
-		Optional<Departamento> optional = departamentoRepository.findById(idDepartamento);
-		if (optional.isPresent()) {
-			Departamento departamento = form.atualizar(idDepartamento, departamentoRepository);
-			return ResponseEntity.ok(new DepartamentoDTO(departamento));
-		}
-		return ResponseEntity.notFound().build();
-	}
+    }
 
-	@DeleteMapping("/{idDepartamento}")
-	@Transactional
-	public ResponseEntity<?> remover(@PathVariable Long idDepartamento) {
-		Optional<Departamento> optional = departamentoRepository.findById(idDepartamento);
-		if (optional.isPresent()) {
-			departamentoRepository.deleteById(idDepartamento);
-			return ResponseEntity.ok().build();
-		}
-		return ResponseEntity.notFound().build();
-	}
+    @PutMapping("/{idDepartamento}")
+    @Transactional
+    public ResponseEntity<DepartamentoDTO> atualizar(@PathVariable Long idDepartamento, @RequestBody @Valid AtualizarDepartamentoForm form) {
+        Departamento departamento = departamentoService.atualizaDepartamento(idDepartamento, form);
+        return ResponseEntity.ok(new DepartamentoDTO(departamento));
+    }
+
+    @DeleteMapping("/{idDepartamento}")
+    @Transactional
+    public ResponseEntity<?> remover(@PathVariable Long idDepartamento) {
+        boolean removido = departamentoService.remover(idDepartamento);
+        if (removido) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 
 }

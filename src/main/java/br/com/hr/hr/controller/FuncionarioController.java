@@ -23,7 +23,6 @@ import br.com.hr.hr.dto.FuncionarioDTO;
 import br.com.hr.hr.form.AtualizaFuncionarioDto;
 import br.com.hr.hr.form.FuncionarioForm;
 import br.com.hr.hr.model.Pessoa;
-import br.com.hr.hr.repository.FuncionarioRepository;
 
 @RestController
 @RequestMapping("/funcionario")
@@ -32,8 +31,6 @@ public class FuncionarioController {
     @Autowired
     private FuncionarioService funcionarioService;
 
-    @Autowired
-    private FuncionarioRepository funcionarioRepository;
 
     @GetMapping
     public Page<FuncionarioDTO> listar(@RequestParam(defaultValue = "0") @Min(0) int page, @RequestParam(defaultValue = "10") @Min(1) int size, @Valid @ModelAttribute BuscaFuncionarioDTO busca) {
@@ -60,14 +57,12 @@ public class FuncionarioController {
 
     @DeleteMapping("/{id}")
     @Transactional
-    public ResponseStatusException remover(@PathVariable Long id) {
-        Optional<Pessoa> optional = funcionarioRepository.findById(id);
-        if (optional.isPresent()) {
-            funcionarioRepository.deleteById(id);
-            return new ResponseStatusException(HttpStatus.OK, "Funcionario Removido com sucesso!");
+    public ResponseEntity<?> remover(@PathVariable Long id) {
+        boolean removido = funcionarioService.remover(id);
+        if (removido) {
+            return ResponseEntity.ok().build();
         }
-
-        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Entidade não encontrada");
+        return ResponseEntity.notFound().build();
 
     }
 

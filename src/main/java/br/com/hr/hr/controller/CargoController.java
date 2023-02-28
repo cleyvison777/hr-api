@@ -5,11 +5,11 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
+import br.com.hr.hr.service.CargoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,53 +32,46 @@ import br.com.hr.hr.repository.CargoRepository;
 @RequestMapping("/cargo")
 public class CargoController {
 
-	@Autowired
-	private CargoRepository cargoRepository;
+    @Autowired
+    private CargoService cargoService;
 
-	@GetMapping
-	public Page<CargoDto> listar(@RequestParam int page, @RequestParam int size,
-			@RequestParam(required = false) String nome) {
-		Pageable pageable = PageRequest.of(page, size);
-		if (nome == null) {
-			Page<Cargo> cargo = cargoRepository.findAll(pageable);
-			return CargoDto.converter(cargo);
+    @Autowired
+    private CargoRepository cargoRepository;
 
-		} else {
-			Page<Cargo> cargo = cargoRepository.findByNome(nome, pageable);
-			return CargoDto.converter(cargo);
-		}
+    @GetMapping
+    public Page<CargoDto> listar(@RequestParam(defaultValue = "0") @Min(0) int page, @RequestParam(defaultValue = "10") @Min(1) int size, @RequestParam(required = false) String nome) {
+        return cargoService.buscarCargo(nome, size, page);
 
-	}
+    }
 
-	@PostMapping
-	@Transactional
-	public ResponseEntity<CargoDto> cadastrar(@RequestBody @Valid CargoForm form, UriComponentsBuilder builder) {
-		Cargo cargo = form.converter();
-		cargoRepository.save(cargo);
-		URI uri = builder.path("/cargo/{id}").buildAndExpand(cargo.getId()).toUri();
-		return ResponseEntity.created(uri).body(new CargoDto(cargo));
-	}
+    @PostMapping
+    @Transactional
+    public ResponseEntity<CargoDto> cadastrar(@RequestBody @Valid CargoForm form, UriComponentsBuilder builder) {
+        Cargo cargo = form.converter();
+        cargoService.cadastrar(cargo);
+        URI uri = builder.path("/cargo/{id}").buildAndExpand(cargo.getId()).toUri();
+        return ResponseEntity.created(uri).body(new CargoDto(cargo));
+    }
 
-	@DeleteMapping("/{id}")
-	@Transactional
-	public ResponseEntity<?> remover(@PathVariable Long id) {
-		Optional<Cargo> optional = cargoRepository.findById(id);
-		if (optional.isPresent()) {
-			cargoRepository.deleteById(id);
-			return ResponseEntity.ok().build();
-		}
-		return ResponseEntity.notFound().build();
-	}
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity<?> remover(@PathVariable Long id) {
+        boolean removido = cargoService.remover(id);
+        if (removido) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 
-	@PutMapping("/{id}")
-	@Transactional
-	public ResponseEntity<CargoDto> atualizar(@PathVariable Long id, @RequestBody @Valid AtualizarCargoForm form) {
-		Optional<Cargo> optional = cargoRepository.findById(id);
-		if (optional.isPresent()) {
-			Cargo cargo = form.atualiza(id, cargoRepository);
-			return ResponseEntity.ok(new CargoDto(cargo));
-		}
-		return ResponseEntity.notFound().build();
-	}
+    @PutMapping("/{id}")
+    @Transactional
+    public ResponseEntity<CargoDto> atualizar(@PathVariable Long id, @RequestBody @Valid AtualizarCargoForm form) {
+        Optional<Cargo> optional = cargoRepository.findById(id);
+        if (optional.isPresent()) {
+            Cargo cargo = form.atualiza(id, cargoRepository);
+            return ResponseEntity.ok(new CargoDto(cargo));
+        }
+        return ResponseEntity.notFound().build();
+    }
 
 }
