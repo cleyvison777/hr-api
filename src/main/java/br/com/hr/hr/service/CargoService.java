@@ -1,6 +1,7 @@
 package br.com.hr.hr.service;
 
 import br.com.hr.hr.dto.CargoDto;
+import br.com.hr.hr.form.AtualizarCargoForm;
 import br.com.hr.hr.model.Cargo;
 import br.com.hr.hr.repository.CargoRepository;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.Optional;
 
@@ -48,9 +50,18 @@ public class CargoService {
             log.info("Cargo removido com sucesso. ID: {}", id);
             return true;
         }
-        log.warn("Não foi possivel remover o departamento. ID: {}" + id);
+        log.warn("Não foi possivel remover o departamento. ID: {}", id);
         return false;
+    }
 
+    @Transactional
+    public Cargo atualizaCargo(Long id, AtualizarCargoForm form) {
+        Optional<Cargo> optional = cargoRepository.findById(id);
+        if (optional.isPresent()) {
+            Cargo cargo = form.atualiza(id, cargoRepository);
+            return cargoRepository.save(cargo);
+        }
+        throw new EntityNotFoundException("ENTIDADE NÃO ENCONTRADA" + id);
     }
 
 }

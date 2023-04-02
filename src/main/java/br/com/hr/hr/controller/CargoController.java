@@ -35,8 +35,6 @@ public class CargoController {
     @Autowired
     private CargoService cargoService;
 
-    @Autowired
-    private CargoRepository cargoRepository;
 
     @GetMapping
     public Page<CargoDto> listar(@RequestParam(defaultValue = "0") @Min(0) int page, @RequestParam(defaultValue = "10") @Min(1) int size, @RequestParam(required = false) String nome) {
@@ -66,12 +64,9 @@ public class CargoController {
     @PutMapping("/{id}")
     @Transactional
     public ResponseEntity<CargoDto> atualizar(@PathVariable Long id, @RequestBody @Valid AtualizarCargoForm form) {
-        Optional<Cargo> optional = cargoRepository.findById(id);
-        if (optional.isPresent()) {
-            Cargo cargo = form.atualiza(id, cargoRepository);
-            return ResponseEntity.ok(new CargoDto(cargo));
-        }
-        return ResponseEntity.notFound().build();
+        Cargo cargo = cargoService.atualizaCargo(id, form);
+        return ResponseEntity.ok(new CargoDto(cargo));
+
     }
 
 }

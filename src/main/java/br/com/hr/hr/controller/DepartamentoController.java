@@ -27,7 +27,6 @@ import br.com.hr.hr.dto.DepartamentoDTO;
 import br.com.hr.hr.form.AtualizarDepartamentoForm;
 import br.com.hr.hr.form.DepartamentoForm;
 import br.com.hr.hr.model.Departamento;
-import br.com.hr.hr.repository.DepartamentoRepository;
 
 @RestController
 @RequestMapping("/departamento")
@@ -62,7 +61,6 @@ public class DepartamentoController {
     }
 
     @DeleteMapping("/{idDepartamento}")
-    @Transactional
     public ResponseEntity<?> remover(@PathVariable Long idDepartamento) {
         boolean removido = departamentoService.remover(idDepartamento);
         if (removido) {

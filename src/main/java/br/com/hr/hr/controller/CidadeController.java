@@ -5,7 +5,9 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
+import br.com.hr.hr.service.CidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,54 +34,39 @@ import br.com.hr.hr.repository.CidadeRepository;
 @RequestMapping("/cidade")
 public class CidadeController {
 
-	@Autowired
-	private CidadeRepository cidadeRepository;
+    @Autowired
+    private CidadeService cidadeService;
 
-	@PostMapping
-	@Transactional
-	public ResponseEntity<CidadeDTO> cadastrar(@RequestBody @Valid CidadeForm cidadeForm,
-			UriComponentsBuilder builder) {
-		Cidade cidade = cidadeForm.converter();
-		cidadeRepository.save(cidade);
-		URI uri = builder.path("/cidade/{id}").buildAndExpand(cidade.getId()).toUri();
-		return ResponseEntity.created(uri).body(new CidadeDTO(cidade));
+    @PostMapping
+    @Transactional
+    public ResponseEntity<CidadeDTO> cadastrar(@RequestBody @Valid CidadeForm cidadeForm,
+                                               UriComponentsBuilder builder) {
+        Cidade cidade = cidadeForm.converter();
+        cidadeService.cadastrar(cidade);
+        URI uri = builder.path("/cidade/{id}").buildAndExpand(cidade.getId()).toUri();
+        return ResponseEntity.created(uri).body(new CidadeDTO(cidade));
 
-	}
+    }
 
-	@GetMapping
-	public Page<CidadeDTO> listar(@RequestParam int page, @RequestParam int size,
-			@RequestParam(required = false) String nome) {
-		Pageable pageable = PageRequest.of(page, size);
-		if (nome == null) {
-			Page<Cidade> cidade = cidadeRepository.findAll(pageable);
-			return CidadeDTO.converter(cidade);
-		} else {
-			Page<Cidade> cidade = cidadeRepository.findByNome(nome, pageable);
-			return CidadeDTO.converter(cidade);
-		}
-	}
+    @GetMapping
+    public Page<CidadeDTO> listar(@RequestParam(defaultValue = "0") @Min(0) int page, @RequestParam(defaultValue = "10") @Min(1) int size,
+                                  @RequestParam(required = false) String nome) {
+        return cidadeService.listar(nome, size, page);
+    }
 
-	@DeleteMapping("/{id}")
-	@Transactional
-	public ResponseEntity<?> deletar(@PathVariable Long id) {
-		Optional<Cidade> optional = cidadeRepository.findById(id);
-		if (optional.isPresent()) {
-			cidadeRepository.deleteById(id);
-			return ResponseEntity.ok().build();
-		}
-		return ResponseEntity.notFound().build();
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deletar(@PathVariable Long id) {
+        boolean removido = cidadeService.remover(id);
+        if (removido) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.ok().build();
+    }
 
-	}
-
-	@PutMapping("/{id}")
-	@Transactional
-	public ResponseEntity<CidadeDTO> atualizar(@PathVariable Long id, @RequestBody @Valid CidadeAtualizaForm form) {
-		Optional<Cidade> optional = cidadeRepository.findById(id);
-		if (optional.isPresent()) {
-			Cidade cidade = form.atualiza(cidadeRepository, id);
-			return ResponseEntity.ok(new CidadeDTO(cidade));
-		}
-		return ResponseEntity.notFound().build();
-	}
+    @PutMapping("/{id}")
+    public ResponseEntity<CidadeDTO> atualizar(@PathVariable Long id, @RequestBody @Valid CidadeAtualizaForm form) {
+        Cidade cidade = cidadeService.atualizaCidade(id, form);
+        return ResponseEntity.ok(new CidadeDTO(cidade));
+    }
 
 }

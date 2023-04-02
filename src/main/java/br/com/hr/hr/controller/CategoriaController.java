@@ -5,7 +5,9 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
+import br.com.hr.hr.service.CategoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,56 +34,43 @@ import br.com.hr.hr.repository.CategoriaRepository;
 @RequestMapping("/categoria")
 public class CategoriaController {
 
-	@Autowired
-	private CategoriaRepository categoriaRepository;
+    @Autowired
+    private CategoriaService categoriaService;
+    @Autowired
+    private CategoriaRepository categoriaRepository;
 
-	@GetMapping
-	public Page<CategoriaDto> listar(@RequestParam(required = false) String nome, @RequestParam int size,
-			@RequestParam int page) {
-		Pageable pageable = PageRequest.of(page, size);
-		if (nome == null) {
-			Page<Categoria> categoria = categoriaRepository.findAll(pageable);
-			return CategoriaDto.converter(categoria);
-		} else {
-			Page<Categoria> categoria = categoriaRepository.findByNome(nome, pageable);
-			return CategoriaDto.converter(categoria);
-		}
+    @GetMapping
+    public Page<CategoriaDto> listar(@RequestParam(required = false) String nome, @RequestParam(defaultValue = "10") @Min(1) int size,
+                                     @RequestParam(defaultValue = "0") @Min(0) int page) {
+        return categoriaService.listarCategoria(nome, size, page);
 
-	}
+    }
 
-	@PostMapping
-	@Transactional
-	public ResponseEntity<CategoriaDto> cadastrar(@RequestBody @Valid CategoriaForm form,
-			UriComponentsBuilder builder) {
-		Categoria categoria = form.converter();
-		categoriaRepository.save(categoria);
-		URI uri = builder.path("/categoria/{id}").buildAndExpand(categoria.getId()).toUri();
-		return ResponseEntity.created(uri).body(new CategoriaDto(categoria));
+    @PostMapping
+    @Transactional
+    public ResponseEntity<CategoriaDto> cadastrar(@RequestBody @Valid CategoriaForm form,
+                                                  UriComponentsBuilder builder) {
+        Categoria categoria = form.converter();
+        categoriaService.cadastrar(categoria);
+        URI uri = builder.path("/categoria/{id}").buildAndExpand(categoria.getId()).toUri();
+        return ResponseEntity.created(uri).body(new CategoriaDto(categoria));
 
-	}
+    }
 
-	@DeleteMapping("/{id}")
-	@Transactional
-	public ResponseEntity<?> deletar(@PathVariable Long id) {
-		Optional<Categoria> optional = categoriaRepository.findById(id);
-		if (optional.isPresent()) {
-			categoriaRepository.deleteById(id);
-			return ResponseEntity.ok().build();
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity<?> deletar(@PathVariable Long id) {
+        boolean removido = categoriaService.remover(id);
+        if (removido) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 
-		}
-		return ResponseEntity.notFound().build();
-	}
-
-	@PutMapping("/{id}")
-	@Transactional
-	
-	public ResponseEntity<CategoriaDto> atualizar(@PathVariable Long id, @RequestBody @Valid CategoriaAtualizaForm form){
-		Optional<Categoria> optional = categoriaRepository.findById(id);
-		 if (optional.isPresent()) {
-			 Categoria categoria = form.atualizar(id, categoriaRepository);
-			  return ResponseEntity.ok(new CategoriaDto(categoria));
-			
-		}
-		 return ResponseEntity.notFound().build();
-	}
+    @PutMapping("/{id}")
+    @Transactional
+    public ResponseEntity<CategoriaDto> atualizar(@PathVariable Long id, @RequestBody @Valid CategoriaAtualizaForm form) {
+        Categoria categoria = categoriaService.atualizaDepartamento(id, form);
+        return ResponseEntity.ok(new CategoriaDto(categoria));
+    }
 }
