@@ -5,7 +5,9 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
+import br.com.hr.hr.service.BairroService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,54 +33,40 @@ import br.com.hr.hr.repository.BairroRepository;
 @RestController
 @RequestMapping("/bairro")
 public class BairroController {
-	@Autowired
-	private BairroRepository bairroRepository;
 
-	@GetMapping
-	public Page<BairroDTO> listar(@RequestParam int size, @RequestParam int page,
-			@RequestParam(required = false) String nome) {
-		Pageable pageable = PageRequest.of(page, size);
-		if (nome == null) {
-			Page<Bairro> bairro = bairroRepository.findAll(pageable);
-			return BairroDTO.converter(bairro);
+    @Autowired
+    private BairroService bairroService;
 
-		} else {
-			Page<Bairro> bairro = bairroRepository.findByNome(nome, pageable);
-			return BairroDTO.converter(bairro);
-		}
+    @GetMapping
+    public Page<BairroDTO> listar(@RequestParam(defaultValue = "10") @Min(1) int size, @RequestParam(defaultValue = "0") int page,
+                                  @RequestParam(required = false) String nome) {
+        return bairroService.listarBairro(nome, page, size);
 
-	}
+    }
 
-	@PostMapping
-	@Transactional
-	public ResponseEntity<BairroDTO> cadastrar(@RequestBody @Valid BairroForm form, UriComponentsBuilder builder) {
-		Bairro bairro = form.converter();
-		bairroRepository.save(bairro);
-		URI uri = builder.path("/bairro/{id}").buildAndExpand(bairro.getId()).toUri();
-		return ResponseEntity.created(uri).body(new BairroDTO(bairro));
-	}
+    @PostMapping
+    @Transactional
+    public ResponseEntity<BairroDTO> cadastrar(@RequestBody @Valid BairroForm form, UriComponentsBuilder builder) {
+        Bairro bairro = form.converter();
+        bairroService.cadastrar(bairro);
+        URI uri = builder.path("/bairro/{id}").buildAndExpand(bairro.getId()).toUri();
+        return ResponseEntity.created(uri).body(new BairroDTO(bairro));
+    }
 
-	@DeleteMapping("/{id}")
-	@Transactional
-	public ResponseEntity<?> excluir(@PathVariable Long id) {
-		Optional<Bairro> optional = bairroRepository.findById(id);
-		if (optional.isPresent()) {
-			bairroRepository.deleteById(id);
-			return ResponseEntity.ok().build();
-		}
-		return ResponseEntity.notFound().build();
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> excluir(@PathVariable Long id) {
+        boolean removido = bairroService.remover(id);
+        if (removido) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 
-	}
+    @PutMapping("/{id}")
+    public ResponseEntity<BairroDTO> atualizar(@PathVariable Long id, @Valid @RequestBody AtualizaBairroForm form) {
+        Bairro bairro = bairroService.atualizarBairro(id, form);
+        return ResponseEntity.ok(new BairroDTO(bairro));
 
-	@PutMapping("/{id}")
-	@Transactional
-	public ResponseEntity<BairroDTO> atualizar(@PathVariable Long id, @Valid @RequestBody AtualizaBairroForm form) {
-		Optional<Bairro> optional = bairroRepository.findById(id);
-		if (optional.isPresent()) {
-			Bairro bairro = form.atuializa(id, bairroRepository);
-			return ResponseEntity.ok(new BairroDTO(bairro));
-		}
-		return ResponseEntity.notFound().build();
-	}
+    }
 
 }
