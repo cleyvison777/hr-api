@@ -2,7 +2,6 @@ package br.com.hr.hr.service;
 
 import br.com.hr.hr.dto.BairroDTO;
 import br.com.hr.hr.form.AtualizaBairroForm;
-import br.com.hr.hr.form.AtualizarDepartamentoForm;
 import br.com.hr.hr.model.Bairro;
 import br.com.hr.hr.repository.BairroRepository;
 import org.slf4j.Logger;
